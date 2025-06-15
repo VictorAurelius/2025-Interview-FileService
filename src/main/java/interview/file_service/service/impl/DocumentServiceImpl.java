@@ -8,6 +8,7 @@ import interview.file_service.mapper.DocumentMapper;
 import interview.file_service.repository.DocumentRepository;
 import interview.file_service.service.DocumentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
@@ -30,17 +31,19 @@ import java.util.stream.Collectors;
 public class DocumentServiceImpl implements DocumentService {
 
     private final DocumentRepository documentRepository;
-    private final Path fileStorageLocation;
 
-    public DocumentServiceImpl(DocumentRepository documentRepository, String uploadDir) {
-        this.documentRepository = documentRepository;
-        this.fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+
+    private Path getFileStorageLocation() {
+        Path fileStorageLocation = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
-            Files.createDirectories(this.fileStorageLocation);
+            Files.createDirectories(fileStorageLocation);
         } catch (IOException ex) {
             throw new FileStorageException("Could not create the directory where the uploaded files will be stored",
                     ex);
         }
+        return fileStorageLocation;
     }
 
     @Override
@@ -60,7 +63,7 @@ public class DocumentServiceImpl implements DocumentService {
 
         try {
             // Save file to storage
-            Path targetLocation = this.fileStorageLocation.resolve(fileName);
+            Path targetLocation = getFileStorageLocation().resolve(fileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
             // Save document info to database
