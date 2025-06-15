@@ -1,7 +1,7 @@
 package interview.file_service.service;
 
 import interview.file_service.dto.DocumentDTO;
-import org.springframework.core.io.Resource;
+import interview.file_service.dto.DownloadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -11,5 +11,7 @@ public interface DocumentService {
 
     List<DocumentDTO> getAllDocuments();
 
-    Resource downloadDocument(Long id);
+    DocumentDTO getDocument(Long id);
+
+    DownloadResponse downloadDocument(Long id);
 }

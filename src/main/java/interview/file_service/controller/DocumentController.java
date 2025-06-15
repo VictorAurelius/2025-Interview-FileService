@@ -35,12 +35,20 @@ public class DocumentController {
         return ResponseEntity.ok(ApiResponse.success("Documents retrieved successfully", documents));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<DocumentDTO>> getDocument(@PathVariable Long id) {
+        DocumentDTO document = documentService.getDocument(id);
+        return ResponseEntity.ok(ApiResponse.success("Document retrieved successfully", document));
+    }
+
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadDocument(@PathVariable Long id) {
-        Resource resource = documentService.downloadDocument(id);
+        var downloadResponse = documentService.downloadDocument(id);
+
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(resource);
+                .contentType(MediaType.parseMediaType(downloadResponse.getContentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + downloadResponse.getFilename() + "\"")
+                .body(downloadResponse.getResource());
     }
 }

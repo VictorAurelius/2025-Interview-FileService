@@ -1,6 +1,7 @@
 package interview.file_service.service.impl;
 
 import interview.file_service.dto.DocumentDTO;
+import interview.file_service.dto.DownloadResponse;
 import interview.file_service.entity.Document;
 import interview.file_service.exception.DocumentNotFoundException;
 import interview.file_service.exception.FileStorageException;
@@ -88,7 +89,14 @@ public class DocumentServiceImpl implements DocumentService {
     }
 
     @Override
-    public Resource downloadDocument(Long id) {
+    public DocumentDTO getDocument(Long id) {
+        Document document = documentRepository.findById(id)
+                .orElseThrow(() -> new DocumentNotFoundException("Document not found with id: " + id));
+        return DocumentMapper.INSTANCE.toDto(document);
+    }
+
+    @Override
+    public DownloadResponse downloadDocument(Long id) {
         Document document = documentRepository.findById(id)
                 .orElseThrow(() -> new DocumentNotFoundException("Document not found with id: " + id));
 
@@ -97,7 +105,10 @@ public class DocumentServiceImpl implements DocumentService {
             Resource resource = new UrlResource(filePath.toUri());
 
             if (resource.exists()) {
-                return resource;
+                return new DownloadResponse(
+                        resource,
+                        document.getFileType(),
+                        document.getFileName());
             } else {
                 throw new DocumentNotFoundException("File not found: " + document.getFileName());
             }
